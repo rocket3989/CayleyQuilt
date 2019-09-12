@@ -8,6 +8,7 @@ var cursor = false;
 var canvas = document.getElementById('drawing');
 var ctx = canvas.getContext('2d');
 var width = $('#line_width').val();
+var rowSize = 10;
 
 var rainbow = false;
 var alpha = 1;
@@ -153,7 +154,7 @@ $('body').mousemove(function(){
 });
 
 function hueChange(){
-	hue += Math.sqrt(posY[0]*posY[0] )*speed;
+	hue += Math.sqrt((posY[0]-posY[1]) * (posY[0]-posY[1]) + (posX[0]-posX[1]) * (posX[0]-posX[1]))*speed;
 	hue = hue%360;
 	rgbPick = 'hsla('+ parseInt(hue) +',100%,50%,' + alpha + ')';
 	$('#rgb').css("background-color", rgbPick);
@@ -174,13 +175,13 @@ $("#readTable").click(function(){
                 hashMap.get(element).push({x:x,y:y});    
         });
     });
-    //<div class="line"></div>
     makeGrid();
 });
+
 function makeGrid(){
     $("#grid").empty();
     let rect = canvas.getBoundingClientRect();
-    let rowSize = canvas.height / matrix.length;
+    rowSize = canvas.height / matrix.length;
     for(i = 1; i < matrix.length; i++){
         $("#grid").prepend('<div class="line"></div>');
         $(".line:first").css({
@@ -203,7 +204,6 @@ function draw(){
 	ctx.lineWidth = width;
     ctx.strokeStyle = rgbPick;
 
-    let rowSize = canvas.height / matrix.length;
     currCell = {x:Math.floor(posY[1] / rowSize),y:Math.floor(posX[1] / rowSize)}
     let currVal = matrix[currCell.x][currCell.y];
     

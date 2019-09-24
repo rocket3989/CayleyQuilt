@@ -12,6 +12,7 @@
     body{
         padding: 0;
         margin: 0;
+        width: 100%;
         background-color: #333;
     }
     .column{
@@ -123,6 +124,7 @@
     }
     #truthTable{
         width: 140px;
+        height: 100px;
     }
 </style>
 <html>
@@ -178,6 +180,13 @@
                     
                     <a href="#" class="button" id="btn-download" download="image.png">Download Your Drawing</a>
                 </div>
+                <div class = "column right-input">
+                    <select id="pattern" name="Symmetry"></select>
+                    <div class="attr checkbox">
+                        <input type="checkbox" id="fill" value = 1>Fill       
+                    </div>
+                </div>
+
             </div> 
         </div>            
     </div>

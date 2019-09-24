@@ -1,6 +1,6 @@
 var picker = document.getElementById('canvas_picker').getContext('2d');
 var onPick = false;
-var rgbPick = '#fff';
+var rgbPick = '#000';
 var img = new Image();
 img.src = document.getElementById('colors').src;
 img.setAttribute('crossOrigin', '');

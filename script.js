@@ -15,7 +15,7 @@ var fill = false;
 var alpha = 1;
 var speed = .1;
 var hue = 0;
-var rgb = [255,255,255, 255];
+var rgb = [0,0,0, 255];
 var undos = [];
 var canvasPic;
 window.addEventListener("resize", redraw);
@@ -265,12 +265,9 @@ function draw(clicked){
             ctx.lineCap = 'round';
             ctx.stroke();
         });
-
-        
-        
         
     }
-    
+    // make fill own function, add stitching to points the cross boundaries
     if(fill && clicked){
 
         colors = ctx.getImageData(currCell.x * rowSize, currCell.y * rowSize, rowSize, rowSize);

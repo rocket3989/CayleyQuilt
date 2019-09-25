@@ -1,4 +1,12 @@
 <style>
+    #rainFill {
+        background-image: -webkit-gradient( linear, left top, right top, color-stop(0, #f22), color-stop(0.15, #f2f), color-stop(0.3, #22f), color-stop(0.45, #2ff), color-stop(0.6, #2f2),color-stop(0.75, #2f2), color-stop(0.9, #ff2), color-stop(1, #f22) );
+        background-image: gradient( linear, left top, right top, color-stop(0, #f22), color-stop(0.15, #f2f), color-stop(0.3, #22f), color-stop(0.45, #2ff), color-stop(0.6, #2f2),color-stop(0.75, #2f2), color-stop(0.9, #ff2), color-stop(1, #f22) );
+        color:transparent;
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+
     #drawing{
         padding: 0;
         margin: 30px auto;
@@ -147,6 +155,12 @@
                     <div class="attr"> 
                             <input type="number" id="line_width" name ="Line Width" value = 1> Line Width       
                     </div>
+                    <div class="attr checkbox">
+                        <input type="checkbox" id="fill" value = 1>Fill       
+                    </div>
+                    <div class="attr">
+                        <input type="button" id="rainFill" value="rainbow fill">       
+                    </div>
                     <div class="attr checkbox rainbow">
                         <input type="checkbox" id="rainbow" name ="rainbow" value = 6> Rainbow       
                     </div>
@@ -181,10 +195,22 @@
                     <a href="#" class="button" id="btn-download" download="image.png">Download Your Drawing</a>
                 </div>
                 <div class = "column right-input">
-                    <select id="pattern" name="Symmetry"></select>
-                    <div class="attr checkbox">
-                        <input type="checkbox" id="fill" value = 1>Fill       
+                    <div class="attr">
+                        <select id="pattern" name="Symmetry"></select>
                     </div>
+                    <div class="attr">
+                        <input type="button" id="gridBtn" value="Toggle Grid">       
+                    </div>
+                    <div class="attr">
+                        <select id="quiltType" name="Symmetry">
+                            <option selected value="0">Rotation</option>
+                            <option value="1">Translation</option>
+                        </select>
+                    </div>
+                    <div class="attr">
+                        <input type="button" id="quilt" value="Quilt!">       
+                    </div>
+                
                 </div>
 
             </div> 
@@ -200,5 +226,6 @@
 <div id="grid"></div>
 </html>
 </html>
+<script language="javascript" type="text/javascript" src="tables.js"></script>
 <script language="javascript" type="text/javascript" src="script.js"></script>
 <script language="javascript" type="text/javascript" src="picker.js"></script>

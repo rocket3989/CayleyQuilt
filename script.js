@@ -16,6 +16,7 @@ var alpha = 1;
 var speed = .1;
 var hue = 0;
 var rgb = [0,0,0, 255];
+var quiltSel = 0;
 var undos = [];
 var canvasPic;
 window.addEventListener("resize", redraw);
@@ -33,13 +34,7 @@ function redraw() {
 }
 
 let dropSel = $("#pattern");
-tables = [
-    ["XOR", ["0 1","1 0"]],
-    ["Dihedral 8", ["e r r2 r3 v h d1 d2", "r r2 r3 e d1 d2 h v", "r2 r3 e r h v d2 d1", "r3 e r r2 d2 d1 v h", "v d2 h d1 e r2 r3 r", "h d1 v d2 r2 e r r3", "d1 v d2 h r r3 e r2", "d2 h d1 v r3 r r2 e"]],
-    ["Z8, *", ["0 0 0 0 0 0 0 0 ", "0 1 2 3 4 5 6 7 ", "0 2 4 6 0 2 4 6 ", "0 3 6 1 4 7 2 5 ", "0 4 0 4 0 4 0 4 ", "0 5 2 7 4 1 6 3", "0 6 4 2 0 6 4 2 ", "0 7 6 5 4 3 2 1 "]],
-    ["Z8, +", ["0 1 2 3 4 5 6 7 ", "1 2 3 4 5 6 7 0 ", "2 3 4 5 6 7 0 1 ", "3 4 5 6 7 0 1 2 ", "4 5 6 7 0 1 2 3 ", "5 6 7 0 1 2 3 4", "6 7 0 1 2 3 4 5 ", "7 0 1 2 3 4 5 6 "]],
-    ["Z+7, *", ["1 2 3 4 5 6 ", "2 4 6 1 3 5 ", "3 6 2 5 1 4 ", "4 1 5 2 6 3 ", "5 3 1 6 4 2 ", "6 5 4 3 2 1 "]],
-]
+
 tables.forEach((e, i)=>{
     if(i == 0){
         dropSel.append($('<option selected></option>').attr('value', i).text(e[0])) 
@@ -57,12 +52,57 @@ dropSel.prop('selectedIndex', 0);
 
 
 dropSel.change(function(){
-                   
-    $("#truthTable").empty();
+    newText = ''
     tables[this.value][1].forEach((e)=>{
-        $("#truthTable").append(e + '\n');                              
+        newText += e + '\n';                              
     });
+    
+    $("#truthTable").val(newText);
     $("#readTable").click()
+
+});
+
+
+$('#quilt').click(function (){
+    
+    undos.push(canvas.toDataURL());
+    
+    $("#grid").hide();
+    drawn = document.createElement('canvas');
+    drawn.width = canvas.width;
+    drawn.height = canvas.height;
+
+    drawCtx = drawn.getContext('2d');
+    drawCtx.drawImage(canvas, 0, 0);
+
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+    if(quiltSel == 0){
+        for(i = 0; i < 4; i++){
+            ctx.drawImage(drawn, 0, 0, canvas.width / 2, canvas.width / 2);
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(Math.PI/2);
+            ctx.translate(-canvas.width/2, -canvas.width/2)
+        }
+    }
+    else{
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.drawImage(drawn, 0, 0, canvas.width / 2, canvas.width / 2);
+        ctx.scale(-1,1)
+        ctx.drawImage(drawn, 0, 0, canvas.width / 2, canvas.width / 2);
+        ctx.scale(1,-1)
+        ctx.drawImage(drawn, 0, 0, canvas.width / 2, canvas.width / 2);
+        ctx.scale(-1,1)
+        ctx.drawImage(drawn, 0, 0, canvas.width / 2, canvas.width / 2);
+        ctx.scale(1,-1)
+        ctx.translate(-canvas.width/2, -canvas.width/2)
+    }
+
+    //ctx.drawImage(drawn, 0, 0, canvas.width / 2, canvas.width / 2);
+
+
+
 
 });
 
@@ -70,7 +110,9 @@ dropSel.change(function(){
 
 
 // Changes to the form input trigger variable reloads
-
+$("#quiltType").change(function(){
+    quiltSel = this.value;
+})
 $('#line_width').change(function (){
 	if ($('#line_width').val() <= 0)
 		$('#line_width').val(1);
@@ -88,6 +130,9 @@ $('#rainbow').change(function (){
 		$('.speed').hide();
 		$('.rainbow').css({marginBottom: '41px'});
 	}
+});
+$('#gridBtn').click(function (){
+	$("#grid").toggle();
 });
 
 $('#fill').change(function (){
@@ -139,6 +184,34 @@ $("#reset").click(function(){
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
+
+$("#rainFill").click(function(){
+    hue = 0
+
+    hashMap.forEach((e, i)=>{
+
+        var hue2rgb = function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = .5 < 0.5 ? .5 * (1 + 1) : .5 + 1 - .5 * 1;
+        var p = 2 * .5 - q;
+        rgb[0] = Math.round(hue2rgb(p, q, (hue/360) + 1/3) * 255);
+        rgb[1] = Math.round(hue2rgb(p, q, hue/360) * 255);
+        rgb[2] = Math.round(hue2rgb(p, q, (hue/360) - 1/3) * 255);
+
+        floodFill((e[0].x * rowSize) + 1, (e[0].y * rowSize) + 1)
+        hue += 360/hashMap.size
+        rgbPick = 'hsla('+ parseInt(hue) +',100%,50%,' + alpha + ')';
+        $('#rgb').css("background-color", rgbPick);
+    });
+});
+
 $('.line').hide();
 $('.cursor').hide();
 $('.speed').hide();
@@ -157,8 +230,11 @@ $('#drawing').mousedown(function(){
     undos.push(canvas.toDataURL());
     pos = getMousePos();
 	posX[0] = (posX[1] = pos.x);
-	posY[0] = (posY[1] = pos.y);
-	draw(true);
+    posY[0] = (posY[1] = pos.y);
+    if(!fill)
+        draw();
+    else
+        floodFill(posX[1], posY[1]);
 	penDown = true;
 	
 });
@@ -189,7 +265,8 @@ $('body').mousemove(function(){
 
         if (rainbow)
             hueChange();
-        draw(false);
+        if(!fill)
+            draw();
     }
 	$('.cursor').css({top: event.clientY-1-width/2, left:  event.clientX-1-width/2,width:width,height:width});
 });
@@ -252,9 +329,9 @@ function draw(clicked){
     ctx.fillStyle = rgbPick;
 
     currCell = {x:Math.floor(posX[1] / rowSize),y:Math.floor(posY[1] / rowSize)}
-    let currVal = matrix[currCell.x][currCell.y];
+    let currVal = matrix[currCell.y][currCell.x];
     
-    if(!fill && currCell.x == lastCell.x && currCell.y == lastCell.y){
+    if(currCell.x == lastCell.x && currCell.y == lastCell.y){
 
         let arr = hashMap.get(currVal);
     
@@ -268,78 +345,89 @@ function draw(clicked){
         
     }
     // make fill own function, add stitching to points the cross boundaries
-    if(fill && clicked){
-
-        colors = ctx.getImageData(currCell.x * rowSize, currCell.y * rowSize, rowSize, rowSize);
-
-        
-        console.log(colors)
-
-        xCurr = posX[1] % rowSize
-        yCurr = posY[1] % rowSize
-
-        pixels = [[xCurr, yCurr], [xCurr + 1, yCurr]]
-
-        console.log(pixels[0])
-        console.log(posX[1])
-
-        pixelPos = (yCurr * rowSize + xCurr) * 4;
-
-        console.log(pixelPos)
-        startColor = {
-            r:colors.data[pixelPos],
-            g:colors.data[pixelPos + 1],
-            b:colors.data[pixelPos + 2],
-            a:colors.data[pixelPos + 3]
-        }
-
-        count = 0
-        while(pixels.length){
-
-            cell = pixels.pop()
-
-            pixelPos = (cell[1] * rowSize + cell[0]) * 4;
-            
-            if(colors.data[pixelPos] + colors.data[pixelPos + 1] + colors.data[pixelPos + 2] + colors.data[pixelPos + 3] != 0)
-                continue;
-
-            colors.data[pixelPos] = rgb[0];
-            colors.data[pixelPos + 1] = rgb[1];
-            colors.data[pixelPos + 2] = rgb[2];
-            colors.data[pixelPos + 3] = rgb[3];
-
-
-            for(offX = -1; offX <= 1; offX += 2){
-                xCurr = cell[0] + offX
-                if(xCurr > rowSize || xCurr < 0)
-                    continue;
-                
-                for(offY = -1; offY <= 1; offY += 2){
-                    yCurr = cell[1] + offY
-                    if(yCurr > rowSize || yCurr < 0)
-                        continue;
-
-                    pixelPos = (yCurr * rowSize + xCurr) * 4;
-
-                    // if(colors.data[pixelPos] + colors.data[pixelPos + 1] + colors.data[pixelPos + 2] + colors.data[pixelPos + 3] == 0)
-                        pixels.push([xCurr, yCurr])
-                }
-                    
-            }
-            // if (pixels.length > 10000)
-            //     break;
-
-        }
-        console.log(count)
-        let arr = hashMap.get(currVal);
     
-        arr.forEach(cordPair =>{
-            ctx.putImageData(colors, cordPair.x * rowSize, cordPair.y * rowSize);
-        });
-        
-       
-    }
     
 
     lastCell = currCell;
+}
+
+function floodFill(inX, inY){
+
+    currCell = {x:Math.floor(inX / rowSize),y:Math.floor(inY / rowSize)}
+    
+    let currVal = matrix[currCell.y][currCell.x];
+
+    colors = ctx.getImageData(currCell.x * rowSize, currCell.y * rowSize, rowSize, rowSize);
+    
+    xCurr = inX % rowSize
+    yCurr = inY % rowSize
+
+    pixels = [[xCurr, yCurr]]
+
+    pixelPos = (yCurr * rowSize + xCurr) * 4;
+
+    startColor = {
+        r:colors.data[pixelPos],
+        g:colors.data[pixelPos + 1],
+        b:colors.data[pixelPos + 2],
+        a:colors.data[pixelPos + 3]
+    }
+
+    while(pixels.length){
+
+        cell = pixels.pop()
+
+        pixelPos = (cell[1] * rowSize + cell[0]) * 4;
+
+
+        if(colors.data[pixelPos] == rgb[0] &&
+            colors.data[pixelPos + 1] == rgb[1]&&
+            colors.data[pixelPos + 2] == rgb[2]&&
+            colors.data[pixelPos + 3] == rgb[3])
+            continue;
+        
+        if(colors.data[pixelPos] != startColor.r || 
+           colors.data[pixelPos + 1] != startColor.g ||
+           colors.data[pixelPos + 2] != startColor.b ||
+           colors.data[pixelPos + 3] != startColor.a){
+            
+            colors.data[pixelPos] = (rgb[0] + colors.data[pixelPos]) / 2;
+            colors.data[pixelPos + 1] = (rgb[1] + colors.data[pixelPos + 1]) / 2;
+            colors.data[pixelPos + 2] = (rgb[2] + colors.data[pixelPos + 2]) / 2;
+            colors.data[pixelPos + 3] = (rgb[3] + colors.data[pixelPos + 3]) / 2;
+            continue;
+        }
+            
+        
+
+        colors.data[pixelPos] = rgb[0];
+        colors.data[pixelPos + 1] = rgb[1];
+        colors.data[pixelPos + 2] = rgb[2];
+        colors.data[pixelPos + 3] = rgb[3];
+
+        for(offX = -1; offX <= 1; offX += 1){
+            xCurr = cell[0] + offX
+            if(xCurr > rowSize || xCurr < 0)
+                continue;
+            
+            for(offY = -1; offY <= 1; offY += 1){
+                yCurr = cell[1] + offY
+                if(yCurr > rowSize || yCurr < 0)
+                    continue;
+
+                pixelPos = (yCurr * rowSize + xCurr) * 4;
+
+                pixels.push([xCurr, yCurr])
+            }
+                
+        }
+
+    }
+    
+    let arr = hashMap.get(currVal);
+
+    arr.forEach(cordPair =>{
+        ctx.putImageData(colors, cordPair.x * rowSize, cordPair.y * rowSize);
+    });
+    
 }

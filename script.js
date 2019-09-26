@@ -23,9 +23,12 @@ window.addEventListener("resize", redraw);
 // redraw();
 
 function redraw() {
+
     var min = (x,y) =>{ return (x > y ? y : x)};
     canvas.height = Math.floor(min(.9 * window.innerHeight, .5 * window.innerWidth - 60) / matrix.length) * matrix.length;
     canvas.width = canvas.height;
+    ctx.fillStyle = 'rgba(255, 255, 255, 255)'
+    ctx.fillRect(0,0,canvas.width,canvas.width)
     $('#drawing').css("height",canvas.height);
     $('#drawing').css("width", canvas.height);
     $('.canvwrap').css("width", window.innerWidth * .5);
@@ -280,7 +283,7 @@ function hueChange(){
 
 
 $("#readTable").click(function(){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
     hashMap.clear();
     matrix = [];
     let lines = $("#truthTable").val().split('\n').filter(d => d);
